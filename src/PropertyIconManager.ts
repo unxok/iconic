@@ -125,6 +125,8 @@ export default class PropertyIconManager extends IconManager {
 			this.plugin.getPropertyItem(clickedPropId);
 		const selectedProps: PropertyItem[] = [];
 
+		console.log("manager: ", this.plugin.menuManager);
+
 		for (const selfEl of this.containerEl?.findAll(
 			".tree-item-self.is-selected"
 		) ?? []) {
