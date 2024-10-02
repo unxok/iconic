@@ -703,17 +703,14 @@ export default class IconicPlugin extends Plugin {
 	private definePropertyItem(propBase: any, unloading?: boolean): PropertyItem {
 		const propIcon = this.settings.propertyIcons[propBase.name] ?? {};
 		let iconDefault;
-		switch (propBase.type) {
-			case 'text': iconDefault = 'lucide-text'; break;
-			case 'multitext': iconDefault = 'lucide-list'; break;
-			case 'number': iconDefault = 'lucide-binary'; break;
-			case 'checkbox': iconDefault = 'lucide-check-square'; break;
-			case 'date': iconDefault = 'lucide-calendar'; break;
-			case 'datetime': iconDefault = 'lucide-clock'; break;
-			case 'aliases': iconDefault = 'lucide-forward'; break;
-			case 'tags': iconDefault = 'lucide-tags'; break;
-			default: iconDefault = 'lucide-file-question'; break;
-		}
+		// @ts-expect-error Private API
+		const widgets =this.app.metadataTypeManager.registeredTypeWidgets as {type: string, icon: string}[];
+		const defaultIcons = Object.values(widgets).reduce((acc, cur) => {
+			const {type, icon} = cur as {type: string, icon: string};
+			acc[type] = icon;
+			return acc;
+		}, {} as {[type: string]: string});
+		iconDefault = defaultIcons[propBase.type] ?? "lucide-file-question"
 		return {
 			id: propBase.name,
 			name: propBase.name,
