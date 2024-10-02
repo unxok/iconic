@@ -278,7 +278,7 @@ export default class IconicPlugin extends Plugin {
 	 * Initialize all icon managers.
 	 */
 	private startIconManagers(): void {
-		this.menuManager = new MenuManager();
+		this.menuManager = new MenuManager(this);
 		this.appIconManager = new AppIconManager(this);
 		this.tabIconManager = new TabIconManager(this);
 		this.fileIconManager = new FileIconManager(this);
@@ -703,7 +703,7 @@ export default class IconicPlugin extends Plugin {
 	private definePropertyItem(propBase: any, unloading?: boolean): PropertyItem {
 		const propIcon = this.settings.propertyIcons[propBase.name] ?? {};
 		let iconDefault;
-		// @ts-expect-error Private API
+		// @ts-expect-error (Private API)
 		const widgets =this.app.metadataTypeManager.registeredTypeWidgets as {type: string, icon: string}[];
 		const defaultIcons = Object.values(widgets).reduce((acc, cur) => {
 			const {type, icon} = cur as {type: string, icon: string};

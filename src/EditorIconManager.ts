@@ -46,7 +46,7 @@ export default class EditorIconManager extends IconManager {
 			})
 		);
 
-		// @ts-expect-error Private API
+		// @ts-expect-error (Private API)
 		// Other plugins may add custom types and ideally will trigger this when they do
 		this.plugin.registerEvent(this.app.metadataTypeManager.on('changed', () => {
 			console.log('Iconic: MetadataTypeManager was changed')

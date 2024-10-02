@@ -1,23 +1,54 @@
 import { Menu, MenuItem } from 'obsidian';
+import IconicPlugin from './IconicPlugin';
+import { around, dedupe } from 'monkey-around';
 
 /**
  * Intercepts context menus to add custom items.
  */
 export default class MenuManager {
+	private plugin: IconicPlugin;
 	private menu: Menu | null;
 	private queuedActions: (() => void)[] = [];
 
-	constructor() {
+	constructor(plugin: IconicPlugin) {
+		this.plugin = plugin;
 		const manager = this;
-		Menu.prototype.showAtPosition = new Proxy(Menu.prototype.showAtPosition, {
-			apply(showAtPosition, menu, args) {
-				manager.menu = menu;
-				if (manager.queuedActions.length > 0) {
-					manager.runQueuedActions.call(manager); // Menu is unhappy with your customer service
-				}
-				return showAtPosition.call(menu, ...args);
-			}
+
+		const removePatch = around(Menu.prototype, {
+			showAtMouseEvent(old) {
+				return dedupe("iconic", old, function (e) {
+					const that = this as Menu;
+					const exit = () => {
+						return old.call(that, e);
+					};
+					const { target } = e;
+					const isHTML = target instanceof HTMLElement;
+					const isSVG = target instanceof SVGElement;
+					if (!isHTML && !isSVG) return exit();
+
+					const isExact =
+						target instanceof HTMLElement &&
+						target.tagName.toLowerCase() === "span" &&
+						target.classList.contains("metadata-property-icon");
+
+					const trueTarget = isExact
+						? target
+						: target.closest<HTMLElement>(
+								"span.metadata-property-icon"
+						  );
+
+					if (!trueTarget) return exit();
+					manager.menu = that;
+					if (manager.queuedActions.length > 0) {
+						manager.runQueuedActions.call(manager); // Menu is unhappy with your customer service
+					}
+
+					return exit();
+				});
+			},
 		});
+
+		plugin.register(removePatch);
 	}
 
 	/**
